@@ -7,6 +7,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define NUM_PONTOS 4
+
+typedef struct aresta{
+    float y_max;
+    float x_in_ymin;
+    float mx;
+    aresta *prox;
+};
+
+typedef struct et{
+    float y_min;
+    et *prox_y;
+    aresta *prox_aresta;
+};
+
+struct pontos{
+    float x;
+    float y;
+}pontos[NUM_PONTOS];
+
+et *listaET = NULL;
+aresta *listaAET = NULL;
+
 
 float x1,x2,x3,x4,y1,y2,y3,y4;
 
@@ -93,9 +116,128 @@ void init()
     gluOrtho2D(0.0,499.0,0.0,499.0);
 }
 
-int main(int argc,char **argv)
+/*void ordenaPontos()
+{
+    int a, j, passo, troca = 1, trocas = 0;
+
+	for (passo = 0; passo < tam-1 && troca; passo++)
+	{
+      troca = 0;
+      for (j = 0; j < tam-passo-1; j++)
+        if (pontos[j].y > pontos[j+1].y)
+        {
+            troca = 1;
+            a = aux[j];
+            aux[j] = aux[j+1];
+            aux[j+1] = a;
+            trocas++;
+        }
+	}
+}*/
+
+void definePontos()
+{
+  printf("Entre com os pontos do polígono:\n");
+  for(int i = 0; i < NUM_PONTOS; i++)
+  {
+     printf("\nPonto %d: \n", i+1);
+     printf("\nx%d:  ", i+1);
+     scanf("%f", &pontos[i].x);
+     printf("\ny%d:  ", i+1);
+     scanf("%f", &pontos[i].y);
+  }
+}
+
+void montaListaET(float x1, float y1, float x2, float y2)
+{
+    et *aux, *reg;
+    aresta *p, *q;
+    float y_max, x_in_ymin, mx, y_min;
+    int achou = 0;
+
+    if (y1 < y2)
+    {
+      y_min = y1;
+      x_in_ymin = x1;
+      y_max = y2;
+    }
+    else
+    {
+      y_min = y2;
+      x_in_ymin = x2;
+      y_max = y1;
+    }
+    mx = 1/((y2-y1)/(x2-x1));
+    aux = listaET;
+    for(aux; aux->prox_y != NULL; aux = aux->prox_y){
+      if (aux)
+      {
+         if (aux->y_min == y_min)
+         {
+             q = aux->prox_aresta;
+             for(q; q->prox != NULL; q = q->prox){
+               if (q->prox == NULL)
+               {
+                   p = (aresta *)malloc(sizeof(aresta));
+                   p->y_max = y_max;
+                   p->x_in_ymin = x_in_ymin;
+                   p->mx = mx;
+                   p->prox = NULL;
+                   q->prox = p;
+               }
+             }
+         }
+         else if(aux->prox_y == NULL)
+         {
+            reg = (et *)malloc(sizeof(et));
+            reg->y_min = y_min;
+            reg->prox_y = NULL;
+            p = (aresta *)malloc(sizeof(aresta));
+            p->y_max = y_max;
+            p->x_in_ymin = x_in_ymin;
+            p->mx = mx;
+            p->prox = NULL;
+            reg->prox_aresta = p;
+         }
+      }
+      else
+      {
+            reg = (et *)malloc(sizeof(et));
+            reg->y_min = y_min;
+            reg->prox_y = NULL;
+            p = (aresta *)malloc(sizeof(aresta));
+            p->y_max = y_max;
+            p->x_in_ymin = x_in_ymin;
+            p->mx = mx;
+            p->prox = NULL;
+            reg->prox_aresta = p;
+      }
+    }
+}
+
+void montaAET()
+{
+    aresta *q, *novo;
+    et *p;
+    q = listaAET;
+    p = listaET;
+    novo = p->prox_aresta;
+    for(p; p->prox_y != NULL; p = p->prox_y)
+    {
+
+    }
+}
+
+int main(int argc, char **argv)
 {
     glutInit(&argc,argv);
+    definePontos();
+    for(int i = 0; i < NUM_PONTOS; i++){
+        if (i == (NUM_PONTOS - 1))
+          montaListaET(pontos[i].x, pontos[i].y, pontos[0].x, pontos[0].y)
+        else
+          montaListaET(pontos[i].x, pontos[i].y, pontos[i+1].x, pontos[i+1].y);
+    }
     glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB);
     glutInitWindowSize(500,500);
 
