@@ -6,8 +6,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <conio.h>
 
-#define NUM_PONTOS 4
+#define NUM_PONTOS 5
 
 typedef struct tAresta{
   int y_max;
@@ -15,10 +16,12 @@ typedef struct tAresta{
   struct tAresta *prox;
 } Aresta;
 
-struct pontos{
+typedef struct tPontos{
   int x;
   int y;
-}points[NUM_PONTOS];
+} Pontos;
+
+Pontos points[NUM_PONTOS];
 
 void insereAresta(Aresta *lista, Aresta *aresta)
 {
@@ -39,7 +42,7 @@ void insereAresta(Aresta *lista, Aresta *aresta)
   q->prox = aresta;
 }
 
-int proxY(int i, int cont, pontos *pts)
+int proxY(int i, int cont, Pontos *pts)
 {
   int j;
 
@@ -55,7 +58,7 @@ int proxY(int i, int cont, pontos *pts)
   return pts[j].y;
 }
 
-void inicializaAresta(pontos menor, pontos maior, int yComp, Aresta *aresta, Aresta *arestas[])
+void inicializaAresta(Pontos menor, Pontos maior, int yComp, Aresta *aresta, Aresta *arestas[])
 {
   aresta->mx = (float) (maior.x - menor.x) / (maior.y - menor.y);
   aresta->x_in_ymin = menor.x;
@@ -66,15 +69,15 @@ void inicializaAresta(pontos menor, pontos maior, int yComp, Aresta *aresta, Are
   insereAresta(arestas[menor.y], aresta);
 }
 
-void montaET(int cont, pontos *pts, Aresta *arestas[])
+void montaET(int cont, Pontos *pts, Aresta *arestas[])
 {
   Aresta *aresta;
-  pontos P1, P2;
-  int yAnt = pts[cont - 2].y;
+  Pontos P1, P2;
+  int i, yAnt = pts[cont - 2].y;
 
   P1.x = pts[cont - 1].x;
   P1.y = pts[cont - 1].y;
-  for(int i = 0; i < cont; cont++)
+  for(i = 0; i < cont; i++)
   {
     P2 = pts[i];
     if (P1.y != P2.y)
@@ -106,20 +109,16 @@ void montaAET(int varredura, Aresta *ativa, Aresta *arestas[])
 void preencheLinha(int varredura, Aresta *ativa)
 {
   Aresta *p1, *p2;
-
-  glClear(GL_COLOR_BUFFER_BIT);
-  glBegin(GL_POINTS);
+  int i;
 
   p1 = ativa->prox;
   while(p1)
   {
     p2 = p1->prox;
-    for (int i = p1->x_in_ymin; i < p2->x_in_ymin; i++)
+    for (i = p1->x_in_ymin; i < p2->x_in_ymin; i++)
       glVertex2i((int)i, varredura);
     p1 = p2->prox;
   }
-  glEnd();
-  glFlush();
 }
 
 void deleta(Aresta *q)
@@ -163,11 +162,12 @@ void ordenaAET(Aresta *ativa)
   }
 }
 
-void scanLine(int cont, pontos *pts)
+void scanLine(int cont, Pontos *pts)
 {
   Aresta *arestas[500], *ativa;
+  int i, varredura;
 
-  for (int i = 0; i < 500; i++)
+  for (i = 0; i < 500; i++)
   {
     arestas[i] = (Aresta *)malloc(sizeof (Aresta));
     arestas[i]-> prox = NULL;
@@ -176,7 +176,9 @@ void scanLine(int cont, pontos *pts)
   ativa = (Aresta *)malloc(sizeof (Aresta));
   ativa->prox = NULL;
 
-  for(int varredura = 0; varredura < 500; varredura++)
+  glClear(GL_COLOR_BUFFER_BIT);
+  glBegin(GL_POINTS);
+  for(varredura = 0; varredura < 500; varredura++)
   {
     montaAET(varredura, ativa, arestas);
     if (ativa->prox)
@@ -186,6 +188,8 @@ void scanLine(int cont, pontos *pts)
       ordenaAET(ativa);
     }
   }
+  glEnd();
+  glFlush();
 }
 
 void inicializaOpenGL()
@@ -200,21 +204,18 @@ void inicializaCores()
 {
   glClearColor(1.0,1.0,1.0,0);// define a cor de fundo da janela (no caso, branco)
   glColor3f(1.0,0.0,0.0);// define cor do traço (no caso, vermelho)
-  glPointSize(4.0);// define espessura do traço
-  gluOrtho2D(0 , 640 , 0 , 480);
+  glPointSize(1.0);// define espessura do traço
+  gluOrtho2D(0 , 500 , 0 , 500);
 }
 
 void definePontos()
 {
-  printf("Entre com os pontos do polígono:\n");
-  for(int i = 0; i < NUM_PONTOS; i++)
-  {
-     printf("\nPonto %d: \n", i+1);
-     printf("\nx%d:  ", i+1);
-     scanf("%d", &points[i].x);
-     printf("\ny%d:  ", i+1);
-     scanf("%d", &points[i].y);
-  }
+  int i;
+  points[0].x = 30; points[0].y = 40;
+  points[1].x = 50; points[1].y = 60;
+  points[2].x = 90; points[2].y = 50;
+  points[3].x = 120; points[3].y = 80;
+  points[4].x = 50; points[4].y = 110;
 }
 
 void chamaScanLine()
